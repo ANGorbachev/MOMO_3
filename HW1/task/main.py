@@ -6,15 +6,25 @@ from argparse import ArgumentParser
 from utils.compute_iou import compute_ious
 
 
-def segment_fish(img):
-    """
-    This method should compute masks for given image
-    Params:
-        img (np.ndarray): input image in BGR format
-    Returns:
-        mask (np.ndarray): fish mask. should contain bool values
-    """
-    # YOUR CODE HERE
+def segment_fish(image):
+    light_orange =  np.array([1, 190, 150]) 
+    dark_orange =  np.array([30, 255, 255]) 
+    light_white =  np.array([60, 0, 200])   
+    dark_white =  np.array([145, 150, 255]) 
+    
+    hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+   
+    mask_orange = cv2.inRange(hsv_img, light_orange, dark_orange)
+    mask_white = cv2.inRange(hsv_img, light_white, dark_white)
+    
+    hsv_img[(mask_orange > 0) | (mask_white > 0)] = ([255, 255, 255])
+    hsv_img[(mask_orange == 0) & (mask_white == 0)] = ([0, 0, 0])
+    
+    kernel_opening = np.ones((5,5),np.uint8)
+    kernel_closing = np.ones((35,35),np.uint8)
+    hsv_img = cv2.morphologyEx(hsv_img, cv2.MORPH_OPEN, kernel_opening)
+    hsv_img = cv2.morphologyEx(hsv_img, cv2.MORPH_CLOSE, kernel_closing)
+    return hsv_img[:,:,0]
 
 
 if __name__ == "__main__":
